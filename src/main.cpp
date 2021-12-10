@@ -11,6 +11,7 @@
  * 
  */
 #include "simlib.h"
+#include <getopt.h>
 
 /**
  * @brief MACROS
@@ -27,19 +28,53 @@
 #define OVEN 2
 #define SHOPKEEPER 1
 
+#define CUSTOMER 20 // in minutes
+#define WHEAT 345600 // eight 30day months in minutes
+
 Store wheat_thresher("Wheat thresher", WHEAT_THRESHER);
 Store wheat_mill("Wheat mill", WHEAT_MILL);
 Store baker("Baker", BAKER);
 Store ingredient_mixer("Ingredient mixer", INGREDIENT_MIXER);
 Store dough_mixer("Dough mixer", DOUGH_MIXER);
-Store dough_divider("Dough divider", DOUGH_DIVIDER);
 Store rounding_table("Rounding table", ROUNDING_TABLE);
 Store oven("Oven", OVEN);
 Store shopkeeper("Shopkeeper", SHOPKEEPER);
 
+Facility dough_divider("Dough divider");
 
+class Supply_chain : public Process
+{
+    void Behavior()
+    {
+        return;
+    }
+};
 
+class Bakery : public Process
+{
+    void Behavior()
+    {
+        return;
+    }
+};
 
+class Generator_wheat : public Event
+{
+    void Behavior()
+    {
+        (new Supply_chain)->Activate();
+        Activate(Time + WHEAT);
+    }
+};
+
+class Generator_customer : public Event
+{
+    void Behavior()
+    {
+        (new Bakery)->Activate();
+        Activate(Time + Exponential(CUSTOMER));
+    }
+};
 
 /**
  * @brief Main body of simulation
