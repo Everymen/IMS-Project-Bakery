@@ -27,6 +27,18 @@
 #define OVEN 2
 #define SHOPKEEPER 1
 
+Store wheat_thresher("Wheat thresher", WHEAT_THRESHER);
+Store wheat_mill("Wheat mill", WHEAT_MILL);
+Store baker("Baker", BAKER);
+Store ingredient_mixer("Ingredient mixer", INGREDIENT_MIXER);
+Store dough_mixer("Dough mixer", DOUGH_MIXER);
+Store dough_divider("Dough divider", DOUGH_DIVIDER);
+Store rounding_table("Rounding table", ROUNDING_TABLE);
+Store oven("Oven", OVEN);
+Store shopkeeper("Shopkeeper", SHOPKEEPER);
+
+
+
 
 
 /**
