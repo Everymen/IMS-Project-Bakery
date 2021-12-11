@@ -33,6 +33,7 @@
 long long wheat_plants = 0;
 long long wheat_grains = 0;
 long long plant_matter = 0;
+long long flour_to_deliver = 0; 
 long long flourKg = 0; 
 long long piecesOfDoughForRounding = 0;
 long long piecesOfDoughForBaking = 0;
@@ -54,7 +55,7 @@ const unsigned long long GEN_WHEAT = 8 MONTH; // eight 30day months in seconds
 const unsigned long long GEN_WHEAT_WAIT = 4 MONTH; // four 30day months in seconds
 const unsigned long long NM_OF_ACRES = 10;
 const unsigned long long NM_OF_THRESHERS = 22;
-const unsigned long long NM_OF_THRESHERS = 1;
+const unsigned long long NM_OF_MILLS = 1;
 const unsigned long long NM_OF_SHOPKEEPERS = 1;
 const unsigned long long NM_OF_BAKERS = 5;
 const unsigned long long NM_OF_INGREDIENT_MIXERS = 1;
@@ -70,10 +71,11 @@ Store DoughDivider("Dough Divider", NM_OF_DOUGH_DIVIDER);
 Store RoundingTable("Rounding Tables", NM_OF_ROUNDING_TABLES);
 Store Oven("Ovens", NM_OF_OVENS);
 Store Wheat_thresher("Wheat thresher", NM_OF_THRESHERS);
-Store Wheat_mill("Wheat mill", NM_OF_THRESHERS);
+Store Wheat_mill("Wheat mill", NM_OF_MILLS);
 Store Shopkeeper("Shopkeeper", NM_OF_SHOPKEEPERS);
 
 Facility Farmer("Farmer");
+Facility Car("Car");
 
 Queue passivatedBulkToPieces;
 Queue passivatedPiecesToRoundedPieces;
@@ -84,15 +86,12 @@ class WheatProcessing : public Process{
     void Behavior(){
         while(wheat_plants >= 233)
         {
-            if(!Wheat_thresher.Full())
-            {
-                Enter(Wheat_thresher, 1);
-                wheat_plants -= 233;
-                Wait(1 DAY);
-                plant_matter += 133;
-                wheat_grains += 100;
-                Leave(Wheat_thresher);
-            }
+            Enter(Wheat_thresher, 1);
+            wheat_plants -= 233;
+            Wait(1 DAY);
+            plant_matter += 133;
+            wheat_grains += 100;
+            Leave(Wheat_thresher);
         }
     }
 };
@@ -101,13 +100,10 @@ class Plant_matter : public Process{
     void Behavior(){
         while(plant_matter >= 5)
         {
-            if(!Farmer.Busy())
-            {
-                Seize(Farmer);
-                Wait(1 DAY);
-                plant_matter -= 5;
-                Release(Farmer);
-            }
+            Seize(Farmer);
+            Wait(1 DAY);
+            plant_matter -= 5;
+            Release(Farmer);
         }
     }
 };
@@ -116,13 +112,23 @@ class Wheat_grains : public Process{
     void Behavior(){
         while(wheat_grains >= 50)
         {
-            if(!Wheat_mill.Full())
-            {
-                Enter(Wheat_mill);
-                Wait(1 HOUR);
-                flourKg += 50;
-                Leave(Wheat_mill);
-            }
+            Enter(Wheat_mill);
+            Wait(1 HOUR);
+            
+            flour_to_deliver += 50;
+            Leave(Wheat_mill);
+        }
+    }
+};
+
+class Flour_transport : public Process{
+    void Behavior(){
+        while(flour_to_deliver >= 1000)
+        {
+            Seize(Car);
+            Wait(2 HOUR);
+            flourKg += 1000;
+            Release(Car);
         }
     }
 };
@@ -391,6 +397,17 @@ class Generator_wheat_grains : public Event{
         Activate(Time + 1); // check every minute if there are at least 50 kilograms of grain
     }   // end Behavior
 };  // end Generator_wheat_grains
+
+class Generator_flour_transport : public Event{
+    void Behavior(){
+        if(flour_to_deliver >= 1000)
+        {
+            flour_to_deliver -= 1000;
+            (new Flour_transport)->Activate();
+        }
+        Activate(Time + 1); // check every minute if there are at least 50 kilograms of grain
+    }   // end Behavior
+};  // end Generator_flour_transport
 
 class Generator_customer : public Event
 {
