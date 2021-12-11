@@ -409,14 +409,14 @@ int main(int argc, char *argv[])
         (new Generator_wheat_plants)->Activate();
     (new Generator_plant_matter)->Activate();
     (new Generator_wheat_grains)->Activate();
-    
+    (new Generator_flour_transport)->Activate();
     
     (new BulkToPiecesGener)->Activate();
     (new PiecesToRoundedPiecesGener)->Activate();
     (new RoundedPiecesToBreadGener)->Activate();
 
     (new Generator_customer)->Activate();
-    
+
     (new StartProcesses)->Activate();
     
     Run();
