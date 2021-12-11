@@ -18,31 +18,49 @@
  * @brief MACROS
  * 
  */
-#define WHEAT_GENERATOR 10
-#define WHEAT_THRESHER 22
-#define WHEAT_MILL 1
-#define BAKER 5
-#define INGREDIENT_MIXER 1
-#define DOUGH_MIXER 1
-#define DOUGH_DIVIDER 1
-#define ROUNDING_TABLE 2
-#define OVEN 2
-#define SHOPKEEPER 1
+#define SECOND * c_SECOND
+#define MINUTE * c_MINUTE
+#define HOUR * c_HOUR
+#define DAY * c_DAY
+#define MONTH * c_MONTH
+#define YEAR * c_YEAR
 
-#define CUSTOMER 1200 // 20 min in seconds
-#define WHEAT 20736000 // eight 30day months in seconds
 
-int wheatKg = 1000; 
-int piecesOfDoughForRounding = 0;
-int piecesOfDoughForBaking = 0;
-int breadPiecesForSale = 0;
+/**
+ * @brief GLOBALS
+ * 
+ */
+unsigned long long wheat_plants = 0;
+unsigned long long wheat_grains = 0;
+unsigned long long plant_matter = 0;
+unsigned long long flourKg = 0; 
+unsigned long long piecesOfDoughForRounding = 0;
+unsigned long long piecesOfDoughForBaking = 0;
+unsigned long long breadPiecesForSale = 0;
+unsigned long long bread_rustic = 0;
+unsigned long long bread_roll = 0;
+unsigned long long bread_french = 0;
 
-const int NM_OF_BAKERS = 5;
-const int NM_OF_INGREDIENT_MIXERS = 1;
-const int NM_OF_DOUGH_MIXERS = 1;
-const int NM_OF_DOUGH_DIVIDER = 1;
-const int NM_OF_ROUNDING_TABLES = 2;
-const int NM_OF_OVENS = 2;
+const unsigned long long c_SECOND = 1;
+const unsigned long long c_MINUTE = c_SECOND * 60;
+const unsigned long long c_HOUR = c_MINUTE * 60;
+const unsigned long long c_DAY = c_HOUR * 24;
+const unsigned long long c_MONTH = c_DAY * 30;
+const unsigned long long c_YEAR = c_MONTH * 12;
+
+const unsigned long long GEN_CUSTOMER = 20 MINUTE; // 20 min in seconds
+const unsigned long long GEN_WHEAT = 8 MONTH; // eight 30day months in seconds
+const unsigned long long GEN_WHEAT_WAIT = 4 MONTH; // four 30day months in seconds
+const unsigned long long NM_OF_ACRES = 10;
+const unsigned long long NM_OF_THRESHERS = 22;
+const unsigned long long NM_OF_THRESHERS = 1;
+const unsigned long long NM_OF_SHOPKEEPERS = 1;
+const unsigned long long NM_OF_BAKERS = 5;
+const unsigned long long NM_OF_INGREDIENT_MIXERS = 1;
+const unsigned long long NM_OF_DOUGH_MIXERS = 1;
+const unsigned long long NM_OF_DOUGH_DIVIDER = 1;
+const unsigned long long NM_OF_ROUNDING_TABLES = 2;
+const unsigned long long NM_OF_OVENS = 2;
 
 Store Baker("Bakers", NM_OF_BAKERS);
 Store IngredientMixer("Ingredient Mixer", NM_OF_INGREDIENT_MIXERS);
@@ -50,14 +68,69 @@ Store DoughMixer("Dough Mixer", NM_OF_DOUGH_MIXERS);
 Store DoughDivider("Dough Divider", NM_OF_DOUGH_DIVIDER);
 Store RoundingTable("Rounding Tables", NM_OF_ROUNDING_TABLES);
 Store Oven("Ovens", NM_OF_OVENS);
-Store Wheat_thresher("Wheat thresher", WHEAT_THRESHER);
-Store Wheat_mill("Wheat mill", WHEAT_MILL);
-Store Shopkeeper("Shopkeeper", SHOPKEEPER);
+Store Wheat_thresher("Wheat thresher", NM_OF_THRESHERS);
+Store Wheat_mill("Wheat mill", NM_OF_THRESHERS);
+Store Shopkeeper("Shopkeeper", NM_OF_SHOPKEEPERS);
+
+Facility Farmer("Farmer");
 
 Queue passivatedBulkToPieces;
 Queue passivatedPiecesToRoundedPieces;
 Queue passivatedRoundedPiecesToBread;
 
+
+class WheatProcessing : public Process{
+    void Behavior(){
+        while(wheat_plants >= 233)
+        {
+            if(!Wheat_thresher.Full())
+            {
+                Enter(Wheat_thresher, 1);
+                wheat_plants -= 233;
+                Wait(1 DAY);
+                plant_matter += 133;
+                wheat_grains += 100;
+                Leave(Wheat_thresher);
+            }
+        }
+    }
+};
+
+class Plant_matter : public Process{
+    void Behavior(){
+        while(plant_matter >= 5)
+        {
+            if(!Farmer.Busy())
+            {
+                Seize(Farmer);
+                Wait(1 DAY);
+                plant_matter -= 5;
+                Release(Farmer);
+            }
+        }
+    }
+};
+
+class Wheat_grains : public Process{
+    void Behavior(){
+        while(wheat_grains >= 50)
+        {
+            if(!Wheat_mill.Full())
+            {
+                Enter(Wheat_mill);
+                Wait(1 HOUR);
+                flourKg += 50;
+                Leave(Wheat_mill);
+            }
+        }
+    }
+};
+
+class Bakery : public Process{
+    void Behavior(){
+        return;
+    }
+};
 
 class BulkToPieces : public Process{
     void Behavior(){
@@ -192,9 +265,9 @@ class RoundedPiecesToBread : public Process{
 
 class BulkToPiecesGener : public Event{
     void Behavior(){
-        while(wheatKg > 60)
+        while(flourKg > 60)
         {
-            wheatKg -= 60; //take 60kg of wheat flour
+            flourKg -= 60; //take 60kg of wheat flour
             (new BulkToPieces)->Activate();
         }
         Activate(Time + 1); // check every hour if we didnt't get more supply of wheat flour
@@ -234,21 +307,42 @@ class StartProcesses : public Event{
     }   // end Behavior
 };  // end RoundedPiecesToBreadGener
 
-class Generator_wheat : public Event
+class Generator_wheat_plants : public Event
 {
     void Behavior()
     {
-        (new Supply_chain)->Activate();
-        Activate(Time + WHEAT);
+        wheat_plants += 3045;
+        (new WheatProcessing)->Activate();
+        Activate(Time + GEN_WHEAT + GEN_WHEAT_WAIT);
     }
 };
+
+class Generator_plant_matter : public Event{
+    void Behavior(){
+        if(plant_matter >= 5)
+        {
+            (new Plant_matter)->Activate();
+        }
+        Activate(Time + 1); // check every minute if there are at least 5 kilograms of plant matter
+    }   // end Behavior
+};  // end Generator_plant_matter
+
+class Generator_wheat_grains : public Event{
+    void Behavior(){
+        if(wheat_grains >= 50)
+        {
+            (new Wheat_grains)->Activate();
+        }
+        Activate(Time + 1); // check every minute if there are at least 50 kilograms of grain
+    }   // end Behavior
+};  // end Generator_wheat_grains
 
 class Generator_customer : public Event
 {
     void Behavior()
     {
         (new Bakery)->Activate();
-        Activate(Time + Exponential(CUSTOMER));
+        Activate(Time + Exponential(GEN_CUSTOMER));
     }
 };
 
@@ -262,22 +356,29 @@ class Generator_customer : public Event
 int main(int argc, char *argv[])
 {
     SetOutput("bread.dat");
-    Init(0, 1000000);
+    Init(0, 3 YEAR);
+
+    for (size_t i = 0; i < NM_OF_ACRES; i++)
+        (new Generator_wheat_plants)->Activate();
     (new BulkToPiecesGener)->Activate();
     (new PiecesToRoundedPiecesGener)->Activate();
     (new RoundedPiecesToBreadGener)->Activate();
+    (new Generator_customer)->Activate();
     (new StartProcesses)->Activate();
     Run();
 
     
     // tisk statistik
     //celk.Output();
+    Wheat_thresher.Output();
+    Wheat_mill.Output();
     Baker.Output();
     IngredientMixer.Output();
     DoughMixer.Output();
     DoughDivider.Output();
     RoundingTable.Output();
     Oven.Output();
+    Shopkeeper.Output();
 
     std::cout << "Number of bread that ended in store: " << breadPiecesForSale << std::endl;
     
