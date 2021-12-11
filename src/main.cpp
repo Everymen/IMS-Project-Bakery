@@ -360,6 +360,8 @@ int main(int argc, char *argv[])
 
     for (size_t i = 0; i < NM_OF_ACRES; i++)
         (new Generator_wheat_plants)->Activate();
+    (new Generator_plant_matter)->Activate();
+    (new Generator_wheat_grains)->Activate();
     (new BulkToPiecesGener)->Activate();
     (new PiecesToRoundedPiecesGener)->Activate();
     (new RoundedPiecesToBreadGener)->Activate();
