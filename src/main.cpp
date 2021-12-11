@@ -54,7 +54,7 @@ const unsigned long long GEN_WHEAT = 8 MONTH; // eight 30day months in seconds
 const unsigned long long GEN_WHEAT_WAIT = 4 MONTH; // four 30day months in seconds
 const unsigned long long NM_OF_ACRES = 10;
 const unsigned long long NM_OF_THRESHERS = 22;
-const unsigned long long NM_OF_THRESHERS = 1;
+const unsigned long long NM_OF_MILLS = 1;
 const unsigned long long NM_OF_SHOPKEEPERS = 1;
 const unsigned long long NM_OF_BAKERS = 5;
 const unsigned long long NM_OF_INGREDIENT_MIXERS = 1;
@@ -70,7 +70,7 @@ Store DoughDivider("Dough Divider", NM_OF_DOUGH_DIVIDER);
 Store RoundingTable("Rounding Tables", NM_OF_ROUNDING_TABLES);
 Store Oven("Ovens", NM_OF_OVENS);
 Store Wheat_thresher("Wheat thresher", NM_OF_THRESHERS);
-Store Wheat_mill("Wheat mill", NM_OF_THRESHERS);
+Store Wheat_mill("Wheat mill", NM_OF_MILLS);
 Store Shopkeeper("Shopkeeper", NM_OF_SHOPKEEPERS);
 
 Facility Farmer("Farmer");
@@ -84,15 +84,12 @@ class WheatProcessing : public Process{
     void Behavior(){
         while(wheat_plants >= 233)
         {
-            if(!Wheat_thresher.Full())
-            {
                 Enter(Wheat_thresher, 1);
                 wheat_plants -= 233;
                 Wait(1 DAY);
                 plant_matter += 133;
                 wheat_grains += 100;
-                Leave(Wheat_thresher);
-            }
+                Leave(Wheat_thresher);            
         }
     }
 };
@@ -101,13 +98,9 @@ class Plant_matter : public Process{
     void Behavior(){
         while(plant_matter >= 5)
         {
-            if(!Farmer.Busy())
-            {
                 Seize(Farmer);
                 Wait(1 DAY);
-                plant_matter -= 5;
                 Release(Farmer);
-            }
         }
     }
 };
@@ -116,13 +109,10 @@ class Wheat_grains : public Process{
     void Behavior(){
         while(wheat_grains >= 50)
         {
-            if(!Wheat_mill.Full())
-            {
                 Enter(Wheat_mill);
                 Wait(1 HOUR);
                 flourKg += 50;
                 Leave(Wheat_mill);
-            }
         }
     }
 };
@@ -188,33 +178,33 @@ class BulkToPieces : public Process{
                 Passivate();
             }
         }
-        Enter(IngredientMixer, 1);
+        Enter(IngredientMixer, 1 MINUTE);
         Enter(Baker, 1);
-        Wait(Uniform(240, 300)); // 4-5min Put ingredients into mixer
+        Wait(Uniform(4 MINUTE, 5 MINUTE)); // 4-5min Put ingredients into mixer
         Leave(Baker, 1);
-        Wait(540); // 9min Mixing ingredients
+        Wait(9 MINUTE); // 9min Mixing ingredients
         Enter(Baker, 1);
-        Wait(Uniform(60, 120)); // 1-2min Put dough out of mixer
+        Wait(Uniform(1 MINUTE, 2 MINUTE)); // 1-2min Put dough out of mixer
         Leave(IngredientMixer, 1);
-        Wait(Uniform(120, 180)); // 2-3min Prepare dough for fermentation
+        Wait(Uniform(2 MINUTE, 3 MINUTE)); // 2-3min Prepare dough for fermentation
         Leave(Baker, 1);
-        Wait(3600); // 1hour Dough fermentation
+        Wait(1 HOUR); // 1hour Dough fermentation
         Enter(Baker, 1);
-        Wait(Uniform(60, 120)); // 1-2min Dough transfer
+        Wait(Uniform(1 MINUTE, 2 MINUTE)); // 1-2min Dough transfer
         Enter(DoughMixer, 1);
-        Wait(Uniform(60, 120)); // 1-2min Mixer filling
+        Wait(Uniform(1 MINUTE, 2 MINUTE)); // 1-2min Mixer filling
         Leave(Baker, 1);
-        Wait(300); // 5min Dough mixing
+        Wait(5 MINUTE); // 5min Dough mixing
         Enter(Baker, 1);
-        Wait(Uniform(60, 120)); //1-2min Dough out of mixer
+        Wait(Uniform(1 MINUTE, 2 MINUTE)); //1-2min Dough out of mixer
         Leave(DoughMixer, 1);
-        Wait(Uniform(120, 180)); // 2-3min Dough transfer
+        Wait(Uniform(2 MINUTE, 3 MINUTE)); // 2-3min Dough transfer
         Enter(DoughDivider, 1);
-        Wait(Uniform(60, 120)); // 1-2min Dough into divider
+        Wait(Uniform(1 MINUTE, 2 MINUTE)); // 1-2min Dough into divider
         Leave(Baker, 1);
         for(int i=0; i<60; i++)
         {
-            Wait(30); // 30s to make in piece of dough for rounding in divider
+            Wait(10 SECOND); // 30s to make in piece of dough for rounding in divider
             piecesOfDoughForRounding++;
         }
         Leave(DoughDivider, 1);
@@ -236,36 +226,12 @@ class PiecesToRoundedPieces : public Process{
             while(piecesOfDoughForRounding > 0)
             {
                 piecesOfDoughForRounding--; // take on piece of dough
-                Wait(Uniform(30, 60)); // 30-60s Dough rounding
+                Wait(Uniform(30 SECOND, 1 MINUTE)); // 30-60s Dough rounding
                 piecesOfDoughForBaking++; // add rounded dough to baking pieces
             }
             Leave(RoundingTable, 1);
             Leave(Baker, 1);
         }
-        /*
-        while(piecesOfDoughForRounding > 0)
-        {
-            if(!Baker.Full() && !RoundingTable.Full())  // there is free Baker and RoundingTable
-            {
-                break;
-            }
-            else
-            {
-                passivatedPiecesToRoundedPieces.Insert(this);
-                Passivate();
-            }
-        }
-        Enter(Baker, 1);
-        Enter(RoundingTable,1);
-        while(piecesOfDoughForRounding > 0) // there are still some pieces for rounding
-        {
-            piecesOfDoughForRounding--; // take on piece of dough
-            Wait(Uniform(30, 60)); // 30-60s Dough rounding
-            piecesOfDoughForBaking++; // add rounded dough to baking pieces
-        }
-        Leave(Baker, 1);
-        Leave(RoundingTable, 1);
-        */
         //celk(Time - prichod);
     } // end Behavior
 
@@ -288,14 +254,14 @@ class RoundedPiecesToBread : public Process{
         }
         Enter(Baker, 1);
         Enter(Oven, 1);
-        Wait(Uniform(60, 120)); // 1-2min Fill oven
+        Wait(Uniform(1 MINUTE, 2 MINUTE)); // 1-2min Fill oven
         Leave(Baker, 1);
-        Wait(1200); // 20min Baking
+        Wait(20 MINUTE); // 20min Baking
         Priority = 10;  // add priotity to this precess in queues
         Enter(Baker, 1);
-        Wait(30); // 30s Bread out of oven
+        Wait(30 SECOND); // 30s Bread out of oven
         Leave(Oven, 1);
-        Wait(Uniform(180, 240)); // 3-4min Transfer to store
+        Wait(Uniform(3 MINUTE, 4 MINUTE)); // 3-4min Transfer to store
         Leave(Baker, 1);
         breadPiecesForSale += 20; // add 20 breads to store, where they can be sold
 
@@ -312,6 +278,7 @@ class RoundedPiecesToBread : public Process{
         {
             bread_french += 20;
         }
+        bread_counter += 20;
 
         //celk(Time - prichod);
     } // end Behavior
@@ -376,6 +343,7 @@ class Generator_plant_matter : public Event{
     void Behavior(){
         if(plant_matter >= 5)
         {
+            plant_matter -= 5;
             (new Plant_matter)->Activate();
         }
         Activate(Time + 1); // check every minute if there are at least 5 kilograms of plant matter
@@ -386,6 +354,7 @@ class Generator_wheat_grains : public Event{
     void Behavior(){
         if(wheat_grains >= 50)
         {
+            wheat_grains -= 50;
             (new Wheat_grains)->Activate();
         }
         Activate(Time + 1); // check every minute if there are at least 50 kilograms of grain
@@ -412,16 +381,19 @@ int main(int argc, char *argv[])
 {
     SetOutput("bread.dat");
     Init(0, 3 YEAR);
-
+    
     for (size_t i = 0; i < NM_OF_ACRES; i++)
         (new Generator_wheat_plants)->Activate();
     (new Generator_plant_matter)->Activate();
     (new Generator_wheat_grains)->Activate();
+    
+    
     (new BulkToPiecesGener)->Activate();
     (new PiecesToRoundedPiecesGener)->Activate();
     (new RoundedPiecesToBreadGener)->Activate();
     (new Generator_customer)->Activate();
     (new StartProcesses)->Activate();
+    
     Run();
 
     
@@ -438,6 +410,7 @@ int main(int argc, char *argv[])
     Shopkeeper.Output();
 
     std::cout << "Number of bread that ended in store: " << breadPiecesForSale << std::endl;
+    std::cout << "Unsold bread: " << bread_counter << std::endl;
     
     return 0;
 }
