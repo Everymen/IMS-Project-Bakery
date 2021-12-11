@@ -30,16 +30,17 @@
  * @brief GLOBALS
  * 
  */
-unsigned long long wheat_plants = 0;
-unsigned long long wheat_grains = 0;
-unsigned long long plant_matter = 0;
-unsigned long long flourKg = 0; 
-unsigned long long piecesOfDoughForRounding = 0;
-unsigned long long piecesOfDoughForBaking = 0;
-unsigned long long breadPiecesForSale = 0;
-unsigned long long bread_rustic = 0;
-unsigned long long bread_roll = 0;
-unsigned long long bread_french = 0;
+long long wheat_plants = 0;
+long long wheat_grains = 0;
+long long plant_matter = 0;
+long long flourKg = 0; 
+long long piecesOfDoughForRounding = 0;
+long long piecesOfDoughForBaking = 0;
+long long breadPiecesForSale = 0;
+long long bread_counter = 0;
+long long bread_rustic = 0;
+long long bread_roll = 0;
+long long bread_french = 0;
 
 const unsigned long long c_SECOND = 1;
 const unsigned long long c_MINUTE = c_SECOND * 60;
@@ -128,7 +129,47 @@ class Wheat_grains : public Process{
 
 class Bakery : public Process{
     void Behavior(){
-        return;
+        if(bread_counter < 1) // if no bread around customer will immediately leave
+            return;
+
+        Enter(Shopkeeper);
+
+        double p = Uniform(0, 100);
+        if(p <= 40) //bread rustic
+        {
+            if(bread_rustic < 1) //after customer finds out that no rustic bread is present, customer leaves
+            {
+                Leave(Shopkeeper);
+                return;
+            }
+
+            bread_rustic--;
+        }
+        else if(p > 40 && p <= 85) //bread roll
+        {
+            if(bread_roll < 1) //after customer finds out that no bread roll is present, customer leaves
+            {
+                Leave(Shopkeeper);
+                return;
+            }
+
+            bread_roll--;
+        }
+        else //bread french
+        {
+            if(bread_french < 1) //after customer finds out that no french bread is present, customer leaves
+            {
+                Leave(Shopkeeper);
+                return;
+            }
+
+            bread_french--;
+        }
+
+        bread_counter--;
+        Wait(Uniform(1 MINUTE, 3 MINUTE));
+
+        Leave(Shopkeeper);
     }
 };
 
@@ -257,6 +298,20 @@ class RoundedPiecesToBread : public Process{
         Wait(Uniform(180, 240)); // 3-4min Transfer to store
         Leave(Baker, 1);
         breadPiecesForSale += 20; // add 20 breads to store, where they can be sold
+
+        double p = Uniform(0, 100);
+        if(p <= 44)
+        {
+            bread_rustic += 20;
+        }
+        else if(p > 34 && p <= 67)
+        {
+            bread_roll += 20;
+        }
+        else
+        {
+            bread_french += 20;
+        }
 
         //celk(Time - prichod);
     } // end Behavior
