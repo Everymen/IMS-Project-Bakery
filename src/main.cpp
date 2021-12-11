@@ -53,16 +53,19 @@ const unsigned long long c_YEAR = c_MONTH * 12;
 const unsigned long long GEN_CUSTOMER = 20 MINUTE; // 20 min in seconds
 const unsigned long long GEN_WHEAT = 8 MONTH; // eight 30day months in seconds
 const unsigned long long GEN_WHEAT_WAIT = 4 MONTH; // four 30day months in seconds
-const unsigned long long NM_OF_ACRES = 10;
-const unsigned long long NM_OF_THRESHERS = 22;
-const unsigned long long NM_OF_MILLS = 1;
-const unsigned long long NM_OF_SHOPKEEPERS = 1;
-const unsigned long long NM_OF_BAKERS = 5;
+unsigned long long NM_OF_ACRES = 10;
+unsigned long long NM_OF_THRESHERS = 22;
+unsigned long long NM_OF_MILLS = 1;
+unsigned long long NM_OF_SHOPKEEPERS = 1;
+unsigned long long NM_OF_BAKERS = 5;
 const unsigned long long NM_OF_INGREDIENT_MIXERS = 1;
 const unsigned long long NM_OF_DOUGH_MIXERS = 1;
 const unsigned long long NM_OF_DOUGH_DIVIDER = 1;
 const unsigned long long NM_OF_ROUNDING_TABLES = 2;
 const unsigned long long NM_OF_OVENS = 2;
+
+unsigned long long simulation_time = 3 YEAR;
+std::string output_file = "bread.dat";
 
 Store Baker("Bakers", NM_OF_BAKERS);
 Store IngredientMixer("Ingredient Mixer", NM_OF_INGREDIENT_MIXERS);
@@ -393,6 +396,65 @@ class Generator_customer : public Event
     }
 };
 
+int parse_args(int argc, char *argv[])
+{
+    char *endptr;
+    long long tmp_ll = 0;
+    
+    int opt = 0;
+    while((opt = getopt(argc, argv, "a:t:m:s:b:o:d:")) != 1)
+    {
+        switch (opt)
+        {
+        case 'a': //NM_OF_ACRES
+            tmp_ll = strtoll(optarg, &endptr, 10);
+            NM_OF_ACRES = (unsigned long long)tmp_ll;
+            break;
+        case 't': //NM_OF_THRESHERS
+            tmp_ll = strtoll(optarg, &endptr, 10);
+            NM_OF_THRESHERS = (unsigned long long)tmp_ll;
+            break;
+        case 'm': //NM_OF_MILLS
+            tmp_ll = strtoll(optarg, &endptr, 10);
+            NM_OF_MILLS = (unsigned long long)tmp_ll;
+            break;
+        case 's': //NM_OF_SHOPKEEPERS
+            tmp_ll = strtoll(optarg, &endptr, 10);
+            NM_OF_SHOPKEEPERS = (unsigned long long)tmp_ll;
+            break;
+        case 'b': //NM_OF_BAKERS
+            tmp_ll = strtoll(optarg, &endptr, 10);
+            NM_OF_BAKERS = (unsigned long long)tmp_ll;
+            break;
+        case 'o': //output_file
+            output_file = optarg;
+            break;
+        case 'd': //simulation_time
+            tmp_ll = strtoll(optarg, &endptr, 10);
+            simulation_time = (unsigned long long)tmp_ll;
+            break;
+        
+        default:
+            printf("Usage: bread [-a N] [-t N] [-m N] [-s N] [-b N] [-o STRING] [-d N]\n");
+            fprintf(stderr, "\nError: Unknown specified parameter.\n\n", opt);
+            return -1;
+            break;
+        }
+
+        if(opt != 'o')
+        {
+            if(*endptr != '\0' || tmp_ll < 0)
+            {
+                printf("Usage: bread [-a N] [-t N] [-m N] [-s N] [-b N] [-o STRING] [-d N]\n");
+                fprintf(stderr, "\nError: Parameter %c only accepts valid positive integers.\n\n", opt);
+                return -1;
+            }
+        }
+    }
+
+    return 0;
+}
+
 /**
  * @brief Main body of simulation
  * 
@@ -402,8 +464,11 @@ class Generator_customer : public Event
  */
 int main(int argc, char *argv[])
 {
-    SetOutput("bread.dat");
-    Init(0, 3 YEAR);
+    if(parse_args(argc, argv) == -1)
+        return -1;
+
+    SetOutput(output_file.c_str());
+    Init(0, simulation_time);
     
     for (size_t i = 0; i < NM_OF_ACRES; i++)
         (new Generator_wheat_plants)->Activate();
