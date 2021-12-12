@@ -402,7 +402,7 @@ int parse_args(int argc, char *argv[])
     long long tmp_ll = 0;
     
     int opt = 0;
-    while((opt = getopt(argc, argv, "a:t:m:s:b:o:d:")) != 1)
+    while((opt = getopt(argc, argv, "a:t:m:s:b:o:d:")) != -1)
     {
         switch (opt)
         {
@@ -436,7 +436,7 @@ int parse_args(int argc, char *argv[])
         
         default:
             printf("Usage: bread [-a N] [-t N] [-m N] [-s N] [-b N] [-o STRING] [-d N]\n");
-            fprintf(stderr, "\nError: Unknown specified parameter.\n\n", opt);
+            fprintf(stderr, "\nError: Unknown specified parameter.\n\n");
             return -1;
             break;
         }
