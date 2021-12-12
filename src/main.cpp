@@ -87,9 +87,9 @@ Queue passivatedBulkToPieces;
 Queue passivatedRoundedPiecesToBread;
 
 // statistics
-Histogram celkBulkToPieces("Time in system: Bulk to pieces", 0, 1000, 50);
-Histogram celkPiecesToRoundedPieces("Time in system: Pieces to rounded pieces", 0, 1000, 50);
-Histogram celkRoundedPiecesToBread("Time in system: Rounded pieces to bread", 0, 1000, 50);
+//Histogram celkBulkToPieces("Time in system: Bulk to pieces", 0, 1000, 50);
+//Histogram celkPiecesToRoundedPieces("Time in system: Pieces to rounded pieces", 0, 1000, 50);
+//Histogram celkRoundedPiecesToBread("Time in system: Rounded pieces to bread", 0, 1000, 50);
 
 
 class WheatProcessing : public Process{
@@ -187,7 +187,7 @@ class Bakery : public Process{
 
 class BulkToPieces : public Process{
     void Behavior(){
-        double prichod = Time;  // for statistics
+        //double prichod = Time;  // for statistics
         
         while(1)
         {
@@ -232,7 +232,7 @@ class BulkToPieces : public Process{
             piecesOfDoughForRounding++;
         }
         Leave(DoughDivider, 1);
-        celkBulkToPieces(Time - prichod); // statistics
+        //celkBulkToPieces(Time - prichod); // statistics
     } // end Behavior
 
 };  // end BulkToPieces
@@ -261,7 +261,7 @@ class PiecesToRoundedPieces : public Process{
 
 class RoundedPiecesToBread : public Process{
     void Behavior(){
-        double prichod = Time;  // statistics
+        //double prichod = Time;  // statistics
         
         while(1)
         {
@@ -304,7 +304,7 @@ class RoundedPiecesToBread : public Process{
         }
         bread_counter += 20;
 
-        celkRoundedPiecesToBread(Time - prichod);   // statistics
+        //celkRoundedPiecesToBread(Time - prichod);   // statistics
     } // end Behavior
 
 };  // end RoundedPiecesToBread
@@ -512,9 +512,9 @@ int main(int argc, char *argv[])
     Shopkeeper.Output();
 
     //histograms
-    celkBulkToPieces.Output();
-    celkPiecesToRoundedPieces.Output();
-    celkRoundedPiecesToBread.Output();
+    //celkBulkToPieces.Output();
+    //celkPiecesToRoundedPieces.Output();
+    //celkRoundedPiecesToBread.Output();
 
     std::cout << "Number of bread that ended in store: " << breadPiecesForSale << std::endl;
     std::cout << "Unsold bread: " << bread_counter << std::endl;
