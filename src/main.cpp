@@ -343,10 +343,20 @@ class RoundedPiecesToBreadGener : public Event{
 
 class StartProcesses : public Event{
     void Behavior(){
-        if(!passivatedBulkToPieces.Empty()) // there is something in the Queue
-            (passivatedBulkToPieces.GetFirst())->Activate();
-        if(!passivatedRoundedPiecesToBread.Empty())
-            (passivatedRoundedPiecesToBread.GetFirst())->Activate();
+        if(Random() <= 0.5)
+        {
+            if(!passivatedBulkToPieces.Empty()) // there is something in the Queue
+                (passivatedBulkToPieces.GetFirst())->Activate();
+            if(!passivatedRoundedPiecesToBread.Empty())
+                (passivatedRoundedPiecesToBread.GetFirst())->Activate();
+        }
+        else
+        {
+            if(!passivatedRoundedPiecesToBread.Empty())
+                (passivatedRoundedPiecesToBread.GetFirst())->Activate();
+            if(!passivatedBulkToPieces.Empty()) // there is something in the Queue
+                (passivatedBulkToPieces.GetFirst())->Activate();
+        }
         Activate(Time + 1);
     }   // end Behavior
 };  // end RoundedPiecesToBreadGener
