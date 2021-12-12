@@ -516,7 +516,14 @@ int main(int argc, char *argv[])
     //celkPiecesToRoundedPieces.Output();
     //celkRoundedPiecesToBread.Output();
 
-    std::cout << "Number of bread that ended in store: " << breadPiecesForSale << std::endl;
+    std::cout << "Wheat plant left: " << wheat_plants << std::endl;
+    std::cout << "Plant matter left: " << plant_matter << std::endl;
+    std::cout << "Wheat grain left: " << wheat_grains << std::endl;
+    std::cout << "Wheat flour left to deliver: " << flour_to_deliver << std::endl;
+    std::cout << "Wheat flour left delivered: " << flourKg << std::endl;
+    std::cout << "Dough left to be rounded: " << piecesOfDoughForRounding << std::endl;
+    std::cout << "Dough left to be baked: " << piecesOfDoughForBaking << std::endl;
+    std::cout << "Bread total created: " << breadPiecesForSale << std::endl;
     std::cout << "Unsold bread: " << bread_counter << std::endl;
     std::cout << "Simulation time [s]: " << simulation_time << std::endl;
     
