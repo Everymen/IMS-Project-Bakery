@@ -50,7 +50,7 @@ const unsigned long long c_DAY = c_HOUR * 24;
 const unsigned long long c_MONTH = c_DAY * 30;
 const unsigned long long c_YEAR = c_MONTH * 12;
 
-const unsigned long long GEN_CUSTOMER = 20 MINUTE; // 20 min in seconds
+const unsigned long long GEN_CUSTOMER = 2 MINUTE; // 2 min in seconds
 const unsigned long long GEN_WHEAT = 8 MONTH; // eight 30day months in seconds
 const unsigned long long GEN_WHEAT_WAIT = 4 MONTH; // four 30day months in seconds
 unsigned long long NM_OF_ACRES = 10;
@@ -438,7 +438,7 @@ int parse_args(int argc, char *argv[])
             break;
         case 'd': //simulation_time
             tmp_ll = strtoll(optarg, &endptr, 10);
-            simulation_time = (unsigned long long)tmp_ll;
+            simulation_time = (unsigned long long)tmp_ll * 1 MONTH; 
             break;
         
         default:
@@ -518,6 +518,7 @@ int main(int argc, char *argv[])
 
     std::cout << "Number of bread that ended in store: " << breadPiecesForSale << std::endl;
     std::cout << "Unsold bread: " << bread_counter << std::endl;
+    std::cout << "Simulation time [s]: " << simulation_time << std::endl;
     
     return 0;
 }
