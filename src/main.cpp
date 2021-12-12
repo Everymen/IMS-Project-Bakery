@@ -239,7 +239,6 @@ class BulkToPieces : public Process{
 
 class PiecesToRoundedPieces : public Process{
     void Behavior(){
-        double prichod = Time;  // statistics
         if(!Baker.Full() && !RoundingTable.Full())
         {
             Enter(Baker, 1);
@@ -256,7 +255,6 @@ class PiecesToRoundedPieces : public Process{
             Leave(RoundingTable, 1);
             Leave(Baker, 1);
         }
-        celkPiecesToRoundedPieces(Time - prichod); // statistics
     } // end Behavior
 
 };  // end PiecesToRoundedPieces
