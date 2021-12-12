@@ -54,7 +54,7 @@ const unsigned long long GEN_CUSTOMER = 2 MINUTE; // 2 min in seconds
 const unsigned long long GEN_WHEAT = 8 MONTH; // eight 30day months in seconds
 const unsigned long long GEN_WHEAT_WAIT = 4 MONTH; // four 30day months in seconds
 unsigned long long NM_OF_ACRES = 10;
-unsigned long long NM_OF_THRESHERS = 22;
+unsigned long long NM_OF_THRESHERS = 1;
 unsigned long long NM_OF_MILLS = 1;
 unsigned long long NM_OF_SHOPKEEPERS = 1;
 unsigned long long NM_OF_BAKERS = 5;
@@ -96,8 +96,8 @@ class WheatProcessing : public Process{
     void Behavior(){
         while(wheat_plants >= 233)
         {
-            Enter(Wheat_thresher, 1);
             wheat_plants -= 233;
+            Enter(Wheat_thresher, 1);
             Wait(1 DAY);
             plant_matter += 133;
             wheat_grains += 100;
@@ -290,7 +290,7 @@ class RoundedPiecesToBread : public Process{
         breadPiecesForSale += 20; // add 20 breads to store, where they can be sold
 
         double p = Uniform(0, 100);
-        if(p <= 44)
+        if(p <= 34)
         {
             bread_rustic += 20;
         }
