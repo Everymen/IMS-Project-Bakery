@@ -84,6 +84,11 @@ Queue passivatedBulkToPieces;
 Queue passivatedPiecesToRoundedPieces;
 Queue passivatedRoundedPiecesToBread;
 
+// statistics
+Histogram celkBulkToPieces("Time in system: Bulk to pieces", 0, 1000, 50);
+Histogram celkPiecesToRoundedPieces("Time in system: Pieces to rounded pieces", 0, 1000, 50);
+Histogram celkRoundedPiecesToBread("Time in system: Rounded pieces to bread", 0, 1000, 50);
+
 
 class WheatProcessing : public Process{
     void Behavior(){
@@ -180,7 +185,7 @@ class Bakery : public Process{
 
 class BulkToPieces : public Process{
     void Behavior(){
-        //double prichod = Time;
+        double prichod = Time;  // for statistics
         while(1)
         {
             if(!Baker.Full() && !IngredientMixer.Full())  // there is free Baker and IngredientMixer
@@ -223,14 +228,14 @@ class BulkToPieces : public Process{
             piecesOfDoughForRounding++;
         }
         Leave(DoughDivider, 1);
-        //celk(Time - prichod);
+        celkBulkToPieces(Time - prichod); // statistics
     } // end Behavior
 
 };  // end BulkToPieces
 
 class PiecesToRoundedPieces : public Process{
     void Behavior(){
-        //double prichod = Time;
+        double prichod = Time;  // statistics
         if(!Baker.Full() && !RoundingTable.Full())
         {
             Enter(Baker, 1);
@@ -247,14 +252,14 @@ class PiecesToRoundedPieces : public Process{
             Leave(RoundingTable, 1);
             Leave(Baker, 1);
         }
-        //celk(Time - prichod);
+        celkPiecesToRoundedPieces(Time - prichod); // statistics
     } // end Behavior
 
 };  // end PiecesToRoundedPieces
 
 class RoundedPiecesToBread : public Process{
     void Behavior(){
-        //double prichod = Time;
+        double prichod = Time;  // statistics
         while(1)
         {
             if(!Baker.Full() && !Oven.Full())  // there is free Baker and RoundingTable
@@ -295,7 +300,7 @@ class RoundedPiecesToBread : public Process{
         }
         bread_counter += 20;
 
-        //celk(Time - prichod);
+        celkRoundedPiecesToBread(Time - prichod);   // statistics
     } // end Behavior
 
 };  // end RoundedPiecesToBread
@@ -336,8 +341,6 @@ class StartProcesses : public Event{
     void Behavior(){
         if(!passivatedBulkToPieces.Empty()) // there is something in the Queue
             (passivatedBulkToPieces.GetFirst())->Activate();
-        //if(!passivatedPiecesToRoundedPieces.Empty())
-            //(passivatedPiecesToRoundedPieces.GetFirst())->Activate();
         if(!passivatedRoundedPiecesToBread.Empty())
             (passivatedRoundedPiecesToBread.GetFirst())->Activate();
         Activate(Time + 1);
@@ -435,9 +438,9 @@ int parse_args(int argc, char *argv[])
             break;
         
         default:
-            printf("Usage: bread [-a N] [-t N] [-m N] [-s N] [-b N] [-o STRING] [-d N]\n");
-            fprintf(stderr, "\nError: Unknown specified parameter.\n\n", opt);
-            return -1;
+            //printf("Usage: bread [-a N] [-t N] [-m N] [-s N] [-b N] [-o STRING] [-d N]\n");
+            //fprintf(stderr, "\nError: Unknown specified parameter.\n\n");
+            //return -1;
             break;
         }
 
@@ -463,9 +466,10 @@ int parse_args(int argc, char *argv[])
  * @return int return code
  */
 int main(int argc, char *argv[])
-{
+{   /*
     if(parse_args(argc, argv) == -1)
         return -1;
+        */
 
     SetOutput(output_file.c_str());
     Init(0, simulation_time);
@@ -488,7 +492,6 @@ int main(int argc, char *argv[])
 
     
     // tisk statistik
-    //celk.Output();
     Wheat_thresher.Output();
     Wheat_mill.Output();
     Baker.Output();
@@ -498,6 +501,11 @@ int main(int argc, char *argv[])
     RoundingTable.Output();
     Oven.Output();
     Shopkeeper.Output();
+
+    //histograms
+    celkBulkToPieces.Output();
+    celkPiecesToRoundedPieces.Output();
+    celkRoundedPiecesToBread.Output();
 
     std::cout << "Number of bread that ended in store: " << breadPiecesForSale << std::endl;
     std::cout << "Unsold bread: " << bread_counter << std::endl;
