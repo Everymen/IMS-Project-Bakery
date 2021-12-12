@@ -461,6 +461,11 @@ int parse_args(int argc, char *argv[])
         }
     }
 
+    Wheat_thresher.SetCapacity(NM_OF_MILLS);
+    Wheat_mill.SetCapacity(NM_OF_MILLS);
+    Shopkeeper.SetCapacity(NM_OF_SHOPKEEPERS);
+    Baker.SetCapacity(NM_OF_BAKERS);
+
     return 0;
 }
 
